@@ -198,7 +198,13 @@ class Request
           begin
             check_private_address(address)
 
-            sock     = ::Socket.new(address.is_a?(Resolv::IPv6) ? ::Socket::AF_INET6 : ::Socket::AF_INET, ::Socket::SOCK_STREAM, 0)
+            # IPv6 is not supported in some cases, and for whatever reason
+            # DNS sometimes returns ipv6 addresses prefferentially.
+            if address.is_a?(Resolv::IPv6)
+              next
+            end
+
+            sock     = ::Socket.new(::Socket::AF_INET, ::Socket::SOCK_STREAM, 0)
             sockaddr = ::Socket.pack_sockaddr_in(port, address.to_s)
 
             sock.setsockopt(::Socket::IPPROTO_TCP, ::Socket::TCP_NODELAY, 1)
